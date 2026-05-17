@@ -14,14 +14,22 @@ logger = logging.getLogger()
 # DO NOT MODIFY
 def go(args):
 
-    run = wandb.init(job_type="basic_cleaning")
+    run = wandb.init(
+        project="nyc_airbnb",
+        job_type="basic_cleaning",
+        group="cleaning",
+        save_code=True
+    )
+
     run.config.update(args)
 
     # Download input artifact. This will also log that this script is using this
-    
-    run = wandb.init(project="nyc_airbnb", group="cleaning", save_code=True)
+ 
+
     artifact_local_path = run.use_artifact(args.input_artifact).file()
     df = pd.read_csv(artifact_local_path)
+
+    
     # Drop outliers
     min_price = args.min_price
     max_price = args.max_price
@@ -34,7 +42,12 @@ def go(args):
     # Only implement this step when reaching Step 6: Pipeline Release and Updates
     # in the project.
     # Add longitude and latitude filter to allow test_proper_boundaries to pass
-    # ENTER CODE HERE
+    
+    idx = (
+    (df['longitude'].between(-74.25, -73.50)) &
+    (df['latitude'].between(40.50, 41.00)))
+    
+    df = df[idx].copy()
 
     # Save the cleaned data
     df.to_csv('clean_sample.csv',index=False)
@@ -44,7 +57,7 @@ def go(args):
      args.output_artifact,
      type=args.output_type,
      description=args.output_description,
- )
+    )
     artifact.add_file("clean_sample.csv")
     run.log_artifact(artifact)
 
@@ -57,43 +70,43 @@ if __name__ == "__main__":
   
     parser.add_argument(
         "--input_artifact", 
-        type = ## INSERT TYPE HERE: str, float or int,
-        help = ## INSERT DESCRIPTION HERE,
+        type = str,
+        help = "sample.csv file",
         required = True
     )
 
     parser.add_argument(
         "--output_artifact", 
-        type = ## INSERT TYPE HERE: str, float or int,
-        help = ## INSERT DESCRIPTION HERE,
+        type = str,
+        help = "This artifact will be the ouput of the sample.csv file that will be clean_sample.csv",
         required = True
     )
 
     parser.add_argument(
         "--output_type", 
-        type = ## INSERT TYPE HERE: str, float or int,
-        help = ## INSERT DESCRIPTION HERE,
+        type = str,
+        help = "csv file",
         required = True
     )
 
     parser.add_argument(
         "--output_description", 
-        type = ## INSERT TYPE HERE: str, float or int,
-        help = ## INSERT DESCRIPTION HERE,
+        type = str,
+        help = "This artifact will be the ouput of the sample.csv file that will be clean_sample.csv",
         required = True
     )
 
     parser.add_argument(
         "--min_price", 
-        type = ## INSERT TYPE HERE: str, float or int,
-        help = ## INSERT DESCRIPTION HERE,
+        type = float,
+        help = "Minimum price that should be looked at",
         required = True
     )
 
     parser.add_argument(
         "--max_price",
-        type = ## INSERT TYPE HERE: str, float or int,
-        help = ## INSERT DESCRIPTION HERE,
+        type = float,
+        help = "Max price that should be looked at",
         required = True
     )
 
